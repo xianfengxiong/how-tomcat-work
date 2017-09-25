@@ -1,8 +1,6 @@
 package ex02.pyrmont;
 
 import javax.servlet.Servlet;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -10,9 +8,10 @@ import java.net.URLClassLoader;
 import java.net.URLStreamHandler;
 
 /**
- * @since 2016-08-23
+ * @author xxf
+ * @since 17-9-25
  */
-public class ServletProcessor1 {
+public class ServletProcessor2 {
 
   public void process(Request request, Response response) {
     String uri = request.getUri();
@@ -21,21 +20,15 @@ public class ServletProcessor1 {
 
     try {
       URL[] urls = new URL[1];
-      URLStreamHandler streamHandler = null;
-      File classPath = new File(HttpServer1.WEB_ROOT);
-      String repository = (new URL("file", null, classPath.getCanonicalPath() + File.separator)).toString(); // 路径最后必须加上 /
+      URLStreamHandler handler = null;
+      File classPath = new File(HttpServer2.WEB_ROOT);
+      String repository = (new URL("file", null, classPath.getCanonicalPath() + File.separator)).toString();
 
-      urls[0] = new URL(null, repository, streamHandler);
-      /* 参考URLClassLoader的注释
-       * Any URL that ends with
-       * a '/' is assumed to refer to a directory. Otherwise, the URL is
-       * assumed to refer to a JAR file which will be downloaded and opened
-       * as needed.
-       */
+      urls[0] = new URL(null, repository, handler);
       loader = new URLClassLoader(urls);
     }
     catch (IOException e) {
-      System.out.println(e.toString());
+      e.printStackTrace();
     }
 
     Class myClass = null;
@@ -47,16 +40,19 @@ public class ServletProcessor1 {
     }
 
     Servlet servlet = null;
+    RequestFacade requestFacade = new RequestFacade(request);
+    ResponseFacade responseFacade = new ResponseFacade(response);
 
     try {
       servlet = (Servlet) myClass.newInstance();
-      servlet.service(request, response);
+      servlet.service(requestFacade, responseFacade);
     }
     catch (Exception e) {
       System.out.println(e.toString());
     }
     catch (Throwable e) {
-      System.out.println(e.toString());
+      e.printStackTrace();
     }
   }
+
 }
